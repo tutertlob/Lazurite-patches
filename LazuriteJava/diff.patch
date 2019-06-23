@@ -1,0 +1,27 @@
+diff --git a/src/com/lapis_semi/lazurite/io/SUBGHZ_MAC.java b/src/com/lapis_semi/lazurite/io/SUBGHZ_MAC.java
+index eec0f6e..203da8b 100644
+--- a/src/com/lapis_semi/lazurite/io/SUBGHZ_MAC.java
++++ b/src/com/lapis_semi/lazurite/io/SUBGHZ_MAC.java
+@@ -37,17 +37,18 @@ public class SUBGHZ_MAC extends Structure<SUBGHZ_MAC, SUBGHZ_MAC.ByValue, SUBGHZ
+ 	/** C type : uint8_t[8] */
+ 	public byte[] tx_addr = new byte[8];
+ 	/** C type : char* */
+-	public Pointer raw;
+-	public short raw_len;
++	//public short raw;
++	//public short raw_len;
+ 	/** C type : char* */
+-	public Pointer payload;
++	public short payload;
+ 	public short payload_len;
+ 	public byte rssi;
+ 	public SUBGHZ_MAC() {
+ 		super();
+ 	}
+ 	protected List<? > getFieldOrder() {
+-		return Arrays.asList("tv_sec", "tv_nsec", "header", "frame_type", "sec_enb", "pending", "ack_req", "panid_comp", "seq_comp", "ielist", "tx_addr_type", "frame_ver", "rx_addr_type", "seq_num", "addr_type", "rx_panid", "rx_addr", "tx_panid", "tx_addr", "raw", "raw_len", "payload", "payload_len", "rssi");
++		//return Arrays.asList("tv_sec", "tv_nsec", "header", "frame_type", "sec_enb", "pending", "ack_req", "panid_comp", "seq_comp", "ielist", "tx_addr_type", "frame_ver", "rx_addr_type", "seq_num", "addr_type", "rx_panid", "rx_addr", "tx_panid", "tx_addr", "raw", "raw_len", "payload", "payload_len", "rssi");
++		return Arrays.asList("tv_sec", "tv_nsec", "header", "frame_type", "sec_enb", "pending", "ack_req", "panid_comp", "seq_comp", "ielist", "tx_addr_type", "frame_ver", "rx_addr_type", "seq_num", "addr_type", "rx_panid", "rx_addr", "tx_panid", "tx_addr", "payload", "payload_len", "rssi");
+ 	}
+ 	protected ByReference newByReference() { return new ByReference(); }
+ 	protected ByValue newByValue() { return new ByValue(); }

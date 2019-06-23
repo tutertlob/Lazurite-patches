@@ -1,0 +1,172 @@
+diff --git a/lib/dyliblazurite.cpp b/lib/dyliblazurite.cpp
+index e5c550a..d96e4f3 100644
+--- a/lib/dyliblazurite.cpp
++++ b/lib/dyliblazurite.cpp
+@@ -264,7 +264,7 @@ namespace lazurite
+ 		if(result <= 0) return result;
+ 
+ 		raw[rawSize]=0;								// force to write NULL
+-		result = lazurite_getRxRssi();
++		rssi = (uint8_t)lazurite_getRxRssi();
+ 		result = lazurite_getRxTime(&sec,&nsec);
+ 		result = lazurite_decMac(&mac,raw,rawSize);
+ 		sprintf(stream,"%d,%d,%d,%d,0x%04x,0x%04x,%s",
+@@ -541,12 +541,15 @@ namespace lazurite
+ 		int errcode=0;
+ 
+ 		result = ioctl(fp,IOCTL_PARAM | IOCTL_SET_DST_PANID,rxpanid), errcode--;
++		printf("lazurite_send1=%d", result);
+ 		if(result != rxpanid) return errcode;
+ 
+ 		result = ioctl(fp,IOCTL_PARAM | IOCTL_SET_DST_ADDR0,rxaddr), errcode--;
++		printf("lazurite_send2=%d", result);
+ 		if(result != rxaddr) return errcode;
+ 
+ 		result = write(fp,payload,length);
++		printf("lazurite_send3=%d\n", result);
+ 		if(result < 0) result = errno*-1;
+ 		return result;
+ 	}
+@@ -686,8 +689,8 @@ namespace lazurite
+ 		uint16_t tmp_size;
+ 		SUBGHZ_MAC_PARAM param;
+ 		subghz_decMac(&param,raw,raw_size);
+-		//lazurite_getRxRssi(&mac->rssi);
+-		//lazurite_getRxTime(&mac->tv_sec,&mac->tv_nsec);
++		mac->rssi = (uint8_t)lazurite_getRxRssi();
++		lazurite_getRxTime(&mac->tv_sec,&mac->tv_nsec);
+ 		mac->header = param.mac_header.header;
+ 		mac->frame_type = param.mac_header.alignment.frame_type;
+ 		mac->sec_enb = param.mac_header.alignment.sec_enb;
+@@ -707,6 +710,16 @@ namespace lazurite
+ 		memcpy(mac->src_addr,param.src_addr,8);
+ 		mac->payload_offset = param.raw_len - param.payload_len;
+ 		mac->payload_len = param.payload_len;
++		printf("dst_addr=");
++		for (int i = 0; i < 8; i++) {
++			printf("%02x", param.dst_addr[i]);
++		}
++		printf("\nsrc_addr=");
++		for (int i = 0; i < 8; i++) {
++			printf("%02x", param.src_addr[i]);
++		}
++		printf("\n");
++
+ 		return param.raw_len;
+ 	}
+ 
+diff --git a/lib/liblazurite.h b/lib/liblazurite.h
+index 24b68b2..1c83b73 100755
+--- a/lib/liblazurite.h
++++ b/lib/liblazurite.h
+@@ -41,8 +41,8 @@ namespace lazurite
+ 		  @brief  parameters of IEEE802154e
+ 		 */
+ 		typedef struct {
+-			//time_t tv_sec;
+-			//long tv_nsec;
++			time_t tv_sec;
++			long tv_nsec;
+ 			uint16_t header;	/*!< header */
+ 			uint8_t frame_type;	/*!< frame type */
+ 			uint8_t sec_enb;	/*!< security enable */
+@@ -62,7 +62,7 @@ namespace lazurite
+ 			uint8_t  src_addr[8];	/*!< tx address */
+ 			uint16_t payload_offset;	/*!< pointer of payload */
+ 			uint16_t payload_len;	/*!<  length of payload */
+-			//uint8_t rssi;
++			uint8_t rssi;
+ 		}SUBGHZ_MAC;
+ 
+ 		/******************************************************************************/
+diff --git a/sample/sample_rx_raw.cpp b/sample/sample_rx_raw.cpp
+index 21962c2..6c85010 100644
+--- a/sample/sample_rx_raw.cpp
++++ b/sample/sample_rx_raw.cpp
+@@ -113,29 +113,30 @@ int main(int argc, char **argv)
+ 		memset(raw,0,sizeof(raw));
+ 		result = lazurite_read(raw,&size);
+ 		if(result > 0 ) {
+-			result = lazurite_decMac(&mac,raw,size);
+-			printf("%02x\t%04x\t%02x%02x%02x%02x%02x%02x%02x%02x\t%04x\t%02x%02x%02x%02x%02x%02x%02x%02x\t",
+-				mac.seq_num,
+-				mac.dst_panid,
+-				mac.dst_addr[7],
+-				mac.dst_addr[6],
+-				mac.dst_addr[5],
+-				mac.dst_addr[4],
+-				mac.dst_addr[3],
+-				mac.dst_addr[2],
+-				mac.dst_addr[1],
+-				mac.dst_addr[0],
+-				mac.dst_panid,
+-				mac.src_addr[7],
+-				mac.src_addr[6],
+-				mac.src_addr[5],
+-				mac.src_addr[4],
+-				mac.src_addr[3],
+-				mac.src_addr[2],
+-				mac.src_addr[1],
+-				mac.src_addr[0]
+-				);
+-			printf("%s\n", raw+mac.payload_offset);
++			printf("read\n");
++			//result = lazurite_decMac(&mac,raw,size);
++			//printf("%02x\t%04x\t%02x%02x%02x%02x%02x%02x%02x%02x\t%04x\t%02x%02x%02x%02x%02x%02x%02x%02x\t",
++			//	mac.seq_num,
++			//	mac.dst_panid,
++			//	mac.dst_addr[7],
++			//	mac.dst_addr[6],
++			//	mac.dst_addr[5],
++			//	mac.dst_addr[4],
++			//	mac.dst_addr[3],
++			//	mac.dst_addr[2],
++			//	mac.dst_addr[1],
++			//	mac.dst_addr[0],
++			//	mac.dst_panid,
++			//	mac.src_addr[7],
++			//	mac.src_addr[6],
++			//	mac.src_addr[5],
++			//	mac.src_addr[4],
++			//	mac.src_addr[3],
++			//	mac.src_addr[2],
++			//	mac.src_addr[1],
++			//	mac.src_addr[0]
++			//	);
++			//printf("%s\n", raw+mac.payload_offset);
+ 		}
+ 		usleep(100000);
+ 	}
+diff --git a/sample/sample_tx.cpp b/sample/sample_tx.cpp
+index ccfe275..26cc18e 100644
+--- a/sample/sample_tx.cpp
++++ b/sample/sample_tx.cpp
+@@ -54,8 +54,10 @@ int main(int argc, char **argv)
+ 	int result;
+ 	char* en;
+ 	uint8_t ch=36;
+-	uint16_t panid=0xabcd;
+-	uint16_t txaddr=0x3FC0;
++	//uint16_t panid=0xabcd;
++	//uint16_t txaddr=0x4445;
++	uint16_t panid=0xffff;
++	uint16_t txaddr=0xffff;
+ 	uint8_t rate = 100;
+ 	uint8_t pwr  = 20;
+ 	char payload[250] = {"hello world\n"};
+@@ -95,12 +97,15 @@ int main(int argc, char **argv)
+ 		printf("lazurite_begin fail = %d\n",result);
+ 		return EXIT_FAILURE;
+ 	}
++	lazurite_rxEnable();
++	printf("Addr type=%d", lazurite_getAddrType());
+ 
+ 	while (bStop == false)
+ 	{
+ 		if((result=lazurite_send(panid,txaddr,payload,strlen(payload))) <0 ) 
+ 		{
+ 			printf("tx error = %s\n",strerror(result*-1));
++			printf("tx error = %d\n",result*-1);
+ 		}
+ 		usleep(10*1000);
+ 	}
