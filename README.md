@@ -16,6 +16,7 @@ sudo depmod /lib/modules/`uname -r`/kernel/Installed directory
 
 popd
 pushd driver/LazuriteJava
+patch -p1 < diff.patch
 make
 make install
 popd
